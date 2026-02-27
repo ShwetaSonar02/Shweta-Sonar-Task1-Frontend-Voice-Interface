@@ -89,6 +89,19 @@ http://localhost:3000
 
 ---
 
+## 📸 Application Screenshots
+
+### 🔹 Domain Selection
+![Domain Selection](screenshots/screen1.png)
+
+### 🔹 Voice Question & Recording
+![Voice Interface](screenshots/screen2.png)
+
+### 🔹 Interview Progress Tracking
+![Progress](screenshots/screen3.png)
+
+---
+
 ## 👩‍💻 Developed By
 
 **Shweta Sonar**
