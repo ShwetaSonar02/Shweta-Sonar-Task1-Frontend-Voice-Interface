@@ -1,43 +1,59 @@
 import React, { useRef, useState } from "react";
 import "./App.css";
+import DomainSelect from "./DomainSelect";
 
 function App() {
   const [selectedDomain, setSelectedDomain] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [statusText, setStatusText] = useState("System Ready");
   const [isRecording, setIsRecording] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
 
-  // 🎯 Questions per domain (5 each)
-  const domainQuestions = {
-    java: [
-      "/audio/java1.mp3",
-      "/audio/java2.mp3",
-      "/audio/java3.mp3",
-      "/audio/java4.mp3",
-      "/audio/java5.mp3",
-    ],
-    web: [
-      "/audio/web1.mp3",
-      "/audio/web2.mp3",
-      "/audio/web3.mp3",
-      "/audio/web4.mp3",
-      "/audio/web5.mp3",
-    ],
-    ai: [
-      "/audio/ai1.mp3",
-      "/audio/ai2.mp3",
-      "/audio/ai3.mp3",
-      "/audio/ai4.mp3",
-      "/audio/ai5.mp3",
-    ],
-  };
+  /* --------------------------------------------------
+   🎯 CREATE 40 QUESTIONS PER DOMAIN (QUESTION BANK)
+-------------------------------------------------- */
 
-  const totalQuestions = selectedDomain
-    ? domainQuestions[selectedDomain].length
-    : 0;
+const generateQuestions = (prefix) => {
+  const arr = [];
+  for (let i = 1; i <= 40; i++) {
+    arr.push(`/audio/${prefix}${i}.mp3`);
+  }
+  return arr;
+};
+
+const domainQuestions = {
+  fullstack: generateQuestions("Development"),
+  python: generateQuestions("Python"),
+  datascience: generateQuestions("ai"),
+  ml: generateQuestions("ai"),
+  digital: generateQuestions("web"),
+  deeplearning: generateQuestions("ai"),
+  corejava: generateQuestions("java"),
+  analytics: generateQuestions("web"),
+  cyber: generateQuestions("ai"),
+  aiml: generateQuestions("ai"),
+};
+  /* --------------------------------------------------
+   🔀 SHUFFLE AND PICK ONLY 10 QUESTIONS
+-------------------------------------------------- */
+const getRandomQuestions = (questions, count = 10) => {
+  const shuffled = [...questions].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count); // pick only 10
+};
+
+  const handleDomainSelect = (domain) => {
+  const selectedSet = getRandomQuestions(domainQuestions[domain], 10);
+
+  setSelectedDomain(domain);
+  setShuffledQuestions(selectedSet); // only 10 stored
+  setQuestionIndex(0);
+  setStatusText("Interview Started");
+};
+
+  const totalQuestions = shuffledQuestions.length;
 
   const progressPercent =
     totalQuestions > 0
@@ -45,24 +61,17 @@ function App() {
       : 0;
 
   /* --------------------------------------------------
-     PLAY QUESTION
+     ▶ PLAY QUESTION AUDIO
   -------------------------------------------------- */
   const playQuestion = () => {
-    if (!selectedDomain) {
-      setStatusText("Please Select Domain First ⚠");
-      return;
-    }
-
     if (questionIndex >= totalQuestions) {
-      setStatusText("🎉 Interview Completed Successfully!");
+      setStatusText("🎉 Interview Completed");
       return;
     }
 
-    const audio = new Audio(
-      domainQuestions[selectedDomain][questionIndex]
-    );
+    const audio = new Audio(shuffledQuestions[questionIndex]);
 
-    setStatusText(`Playing Question ${questionIndex + 1}...`);
+    setStatusText(`Playing Question ${questionIndex + 1}`);
     audio.play();
 
     audio.onended = () => {
@@ -71,13 +80,11 @@ function App() {
   };
 
   /* --------------------------------------------------
-     START RECORDING
+     🎤 START RECORDING
   -------------------------------------------------- */
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
@@ -87,42 +94,39 @@ function App() {
         chunksRef.current.push(e.data);
       };
 
-      mediaRecorder.onstop = saveRecording;
+      mediaRecorder.onstop = handleAnswerSubmit;
 
       mediaRecorder.start();
       setIsRecording(true);
       setStatusText("Recording Answer...");
     } catch (err) {
-      setStatusText("❌ Microphone Error");
+      setStatusText("Microphone Access Denied");
     }
   };
 
   /* --------------------------------------------------
-     STOP RECORDING
+     ⏹ STOP RECORDING
   -------------------------------------------------- */
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      setStatusText("Processing Answer...");
+      setStatusText("Saving Response...");
     }
   };
 
   /* --------------------------------------------------
-     SAVE RECORDING
+     📡 HANDLE ANSWER (NO DOWNLOAD NOW)
+     → Ready to send backend later
   -------------------------------------------------- */
-  const saveRecording = () => {
+  const handleAnswerSubmit = () => {
     const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-    const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Answer_Q${questionIndex + 1}.webm`;
-    a.click();
+    console.log("Recorded Answer Blob:", blob); // future API upload
 
     if (questionIndex + 1 < totalQuestions) {
       setQuestionIndex((prev) => prev + 1);
-      setStatusText("Answer Saved ✅ Moving to Next Question...");
+      setStatusText("Answer Saved. Next Question Ready.");
     } else {
       setQuestionIndex(totalQuestions);
       setStatusText("🎉 Interview Completed Successfully!");
@@ -133,78 +137,51 @@ function App() {
      UI
   -------------------------------------------------- */
   return (
-  <div className="app-container">
-    <h1 className="app-title">AI Interview Voice Interface</h1>
+    <div className="app-container">
+      <h1 className="app-title">AI Interview Voice Interface</h1>
 
-    {/* Domain Selection */}
-    <div className="domain-section">
-      <label>Select Domain:</label>
-      <select
-        className="select-domain"
-        value={selectedDomain}
-        onChange={(e) => {
-          setSelectedDomain(e.target.value);
-          setQuestionIndex(0);
-          setStatusText("System Ready");
-        }}
-      >
-        <option value="">-- Choose Domain --</option>
-        <option value="java">Java Development</option>
-        <option value="web">Web Development</option>
-        <option value="ai">AI / ML</option>
-      </select>
+      {!selectedDomain ? (
+        <DomainSelect onDomainSelect={handleDomainSelect} />
+      ) : (
+        <>
+          <h2 className="status-text">{statusText}</h2>
+
+          <h3>
+            {questionIndex < totalQuestions
+              ? `Question ${questionIndex + 1} of ${totalQuestions}`
+              : "Interview Completed"}
+          </h3>
+
+          <p>
+            Completed: {Math.min(questionIndex, totalQuestions)} | Remaining:{" "}
+            {Math.max(totalQuestions - questionIndex, 0)}
+          </p>
+
+          {/* Progress Bar */}
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+          </div>
+
+          <div className="button-group">
+            <button className="btn play-btn" onClick={playQuestion}>
+              ▶ Play Question
+            </button>
+
+            <button
+              className="btn stop-btn"
+              onClick={stopRecording}
+              disabled={!isRecording}
+            >
+              ⏹ Stop Recording
+            </button>
+          </div>
+        </>
+      )}
     </div>
-
-    {/* Status */}
-    <h2 className="status-text">{statusText}</h2>
-
-    {/* Show Only After Domain Selected */}
-    {selectedDomain && (
-      <>
-        <h3 className="question-count">
-          {questionIndex < totalQuestions
-            ? `Question ${questionIndex + 1} of ${totalQuestions}`
-            : "Interview Completed"}
-        </h3>
-
-        <p className="progress-text">
-          Completed: {Math.min(questionIndex, totalQuestions)} | Remaining:{" "}
-          {Math.max(totalQuestions - questionIndex, 0)}
-        </p>
-
-        {/* Progress Bar */}
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${progressPercent}%` }}
-          ></div>
-        </div>
-
-        {/* Buttons */}
-        <div className="button-group">
-          <button className="btn play-btn" onClick={playQuestion}>
-            ▶ Play Question
-          </button>
-
-          <button
-            className="btn stop-btn"
-            onClick={stopRecording}
-            disabled={!isRecording}
-          >
-            ⏹ Stop Recording
-          </button>
-        </div>
-      </>
-    )}
-  </div>
-);
+  );
 }
-
-const btnStyle = {
-  padding: "10px 20px",
-  margin: "10px",
-  fontSize: "16px",
-  cursor: "pointer",
-};
 
 export default App;
