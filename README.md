@@ -91,11 +91,33 @@ The module is designed to integrate seamlessly with backend AI-based evaluation 
 ---
 
 ## 📂 Project Structure
-
-public/audio/ → Interview Question Audio Files
-src/App.js → Interview Logic & UI
-src/App.css → Styling
-src/DomainSelect.js → Domain Selector
+Shweta-Sonar-Task1-Frontend-Voice-Interface/
+│
+├── public/
+│   ├── audio/                → Interview question audio files
+│   │   ├── FullStack1.mp3
+│   │   ├── Python1.mp3
+│   │   └── ... (40 per domain)
+│   │
+│   ├── index.html            → Main HTML template
+│   └── manifest.json         → App configuration
+│
+├── src/
+│   ├── App.js                → Interview workflow logic
+│   ├── App.css               → UI styling
+│   ├── DomainSelect.js       → Domain selection UI
+│   ├── index.js              → React entry point
+│   └── reportWebVitals.js    → Performance metrics
+│
+├── screenshots/
+│   ├── screen1.png           → Domain selection UI
+│   ├── screen2.png           → Voice question interface
+│   └── screen3.png           → Interview progress screen
+│
+├── package.json              → Project dependencies
+├── package-lock.json         → Dependency lock file
+├── README.md                 → Project documentation
+└── .gitignore                → Git ignored files
 
 ---
 
