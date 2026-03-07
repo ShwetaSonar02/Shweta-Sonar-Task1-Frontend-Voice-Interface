@@ -91,7 +91,7 @@ The module is designed to integrate seamlessly with backend AI-based evaluation 
 ---
 
 ## 📂 Project Structure
-
+'''
 Shweta-Sonar-Task1-Frontend-Voice-Interface
 │
 ├── public/                          → Static files
@@ -121,7 +121,7 @@ Shweta-Sonar-Task1-Frontend-Voice-Interface
 ├── package.json                     → Project dependencies
 ├── package-lock.json                → Dependency lock file
 ├── README.md                        → Project documentation
-└── .gitignore                       → Git ignored files
+└── .gitignore                       → Git ignored files '''
 ---
 
 ## 🚀 How to Run
